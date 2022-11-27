@@ -9,10 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -29,5 +28,17 @@ public class LibraryEventsController {
         libraryEvent.setEventType(LibraryEventType.NEW);
         libraryEventProducer.sendLibraryEvent2(libraryEvent);
         return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
+    }
+
+    @PutMapping
+    public ResponseEntity<?> putLibraryEvent(@RequestBody @Valid LibraryEvent libraryEvent) throws JsonProcessingException {
+
+        if (Objects.isNull(libraryEvent.getId())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please pass the libraryEventId");
+        }
+
+        libraryEvent.setEventType(LibraryEventType.UPDATE);
+        libraryEventProducer.sendLibraryEvent2(libraryEvent);
+        return ResponseEntity.status(HttpStatus.OK).body(libraryEvent);
     }
 }
