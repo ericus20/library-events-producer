@@ -43,12 +43,39 @@ class LibraryEventsControllerTest {
 
         var json = objectMapper.writeValueAsString(libraryEvent);
 
-        Mockito.doNothing().when(libraryEventProducer).sendLibraryEvent2(Mockito.isA(LibraryEvent.class));
+        // Mockito.doNothing().when(libraryEventProducer).sendLibraryEvent2(Mockito.isA(LibraryEvent.class));
+        Mockito.when(libraryEventProducer.sendLibraryEvent2(Mockito.isA(LibraryEvent.class))).thenReturn(null);
 
         //when
         mockMvc.perform(MockMvcRequestBuilders.post("/v1/library-event")
                 .content(json).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isCreated());
+
+    }
+
+    @Test
+    void postLibraryEvent4xx(TestInfo testInfo) throws Exception {
+        //given
+        var book = Book.builder()
+                .id(null)
+                .author(null)
+                .name(testInfo.getDisplayName())
+                .build();
+        var libraryEvent = LibraryEvent.builder()
+                .id(null)
+                .book(book)
+                .build();
+
+        var json = objectMapper.writeValueAsString(libraryEvent);
+
+        Mockito.doNothing().when(libraryEventProducer).sendLibraryEvent2(Mockito.isA(LibraryEvent.class));
+
+        //when
+        String expectedErrorMessage = "book.author - must not be blank,book.id - must not be null";
+        mockMvc.perform(MockMvcRequestBuilders.post("/v1/library-event")
+                .content(json).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+                .andExpect(MockMvcResultMatchers.content().string(expectedErrorMessage));
 
     }
 
